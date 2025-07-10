@@ -1,20 +1,7 @@
--- ============================================================================
--- SISTEMA DE RECRUTAMENTO - IMPLEMENTAÇÃO SQL
--- Banco de Dados: PostgreSQL
--- Descrição: Script completo para criação das tabelas do sistema
--- ============================================================================
-
 -- Configurações iniciais
 SET client_encoding = 'UTF8';
 SET timezone = 'America/Sao_Paulo';
 
--- Criação do banco de dados (executar separadamente se necessário)
--- CREATE DATABASE sistema_recrutamento;
--- \c sistema_recrutamento;
-
--- ============================================================================
--- 1. TABELA PRINCIPAL DE USUÁRIOS
--- ============================================================================
 
 CREATE TABLE usuarios (
     id_usuario SERIAL PRIMARY KEY,
@@ -25,15 +12,6 @@ CREATE TABLE usuarios (
     status_conta VARCHAR(20) DEFAULT 'ativo' CHECK (status_conta IN ('ativo', 'inativo', 'suspenso', 'banido')),
     tipo_usuario VARCHAR(20) NOT NULL CHECK (tipo_usuario IN ('candidato', 'empresa', 'recrutador'))
 );
-
--- Comentários da tabela usuarios
-COMMENT ON TABLE usuarios IS 'Tabela principal que armazena todos os usuários do sistema';
-COMMENT ON COLUMN usuarios.tipo_usuario IS 'Define o tipo de usuário: candidato, empresa ou recrutador';
-COMMENT ON COLUMN usuarios.senha IS 'Senha criptografada (hash) do usuário';
-
--- ============================================================================
--- 2. TABELAS DE ESPECIALIZAÇÃO DE USUÁRIOS
--- ============================================================================
 
 -- Tabela de candidatos (herda de usuarios)
 CREATE TABLE candidatos (
@@ -54,8 +32,6 @@ CREATE TABLE candidatos (
     CONSTRAINT chk_salario_positivo CHECK (salario_pretendido > 0)
 );
 
-COMMENT ON TABLE candidatos IS 'Dados específicos dos candidatos a vagas de emprego';
-
 -- Tabela de empresas (herda de usuarios)  
 CREATE TABLE empresas (
     id_empresa INTEGER PRIMARY KEY REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
@@ -73,8 +49,6 @@ CREATE TABLE empresas (
     CONSTRAINT chk_data_fundacao CHECK (data_fundacao <= CURRENT_DATE)
 );
 
-COMMENT ON TABLE empresas IS 'Dados das empresas que publicam vagas';
-
 -- Tabela de recrutadores (herda de usuarios)
 CREATE TABLE recrutadores (
     id_recrutador INTEGER PRIMARY KEY REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
@@ -85,20 +59,12 @@ CREATE TABLE recrutadores (
     id_empresa INTEGER NOT NULL REFERENCES empresas(id_empresa) ON DELETE CASCADE
 );
 
-COMMENT ON TABLE recrutadores IS 'Profissionais de RH responsáveis pelo recrutamento';
-
--- ============================================================================
--- 3. TABELAS DE APOIO E CLASSIFICAÇÃO
--- ============================================================================
-
 -- Categorias de vagas
 CREATE TABLE categorias_vaga (
     id_categoria SERIAL PRIMARY KEY,
     nome_categoria VARCHAR(100) UNIQUE NOT NULL,
     descricao TEXT
 );
-
-COMMENT ON TABLE categorias_vaga IS 'Categorização das vagas por área/setor';
 
 -- Localizações
 CREATE TABLE localizacoes (
@@ -110,8 +76,6 @@ CREATE TABLE localizacoes (
     endereco_completo TEXT
 );
 
-COMMENT ON TABLE localizacoes IS 'Informações geográficas para vagas e usuários';
-
 -- Habilidades
 CREATE TABLE habilidades (
     id_habilidade SERIAL PRIMARY KEY,
@@ -119,8 +83,6 @@ CREATE TABLE habilidades (
     categoria VARCHAR(50) CHECK (categoria IN ('tecnica', 'comportamental', 'idioma', 'certificacao')),
     descricao TEXT
 );
-
-COMMENT ON TABLE habilidades IS 'Catálogo de habilidades técnicas e comportamentais';
 
 -- Etapas do processo seletivo
 CREATE TABLE etapas_processo (
@@ -131,12 +93,7 @@ CREATE TABLE etapas_processo (
     tipo_etapa VARCHAR(30) CHECK (tipo_etapa IN ('triagem', 'entrevista_rh', 'teste_tecnico', 'entrevista_tecnica', 'entrevista_final', 'verificacao_referencias', 'proposta'))
 );
 
-COMMENT ON TABLE etapas_processo IS 'Etapas padrão dos processos seletivos';
-
--- ============================================================================
--- 4. TABELA DE VAGAS
--- ============================================================================
-
+-- Vagas de emprego
 CREATE TABLE vagas (
     id_vaga SERIAL PRIMARY KEY,
     titulo VARCHAR(255) NOT NULL,
@@ -164,12 +121,6 @@ CREATE TABLE vagas (
     CONSTRAINT chk_salarios_positivos CHECK (salario_min > 0 AND salario_max > 0)
 );
 
-COMMENT ON TABLE vagas IS 'Vagas de emprego publicadas pelas empresas';
-
--- ============================================================================
--- 5. CURRÍCULOS E EXPERIÊNCIAS
--- ============================================================================
-
 -- Currículos dos candidatos
 CREATE TABLE curriculos (
     id_curriculo SERIAL PRIMARY KEY,
@@ -179,8 +130,6 @@ CREATE TABLE curriculos (
     data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     id_candidato INTEGER UNIQUE NOT NULL REFERENCES candidatos(id_candidato) ON DELETE CASCADE
 );
-
-COMMENT ON TABLE curriculos IS 'Currículos dos candidatos';
 
 -- Experiências profissionais
 CREATE TABLE experiencias_profissionais (
@@ -198,8 +147,6 @@ CREATE TABLE experiencias_profissionais (
     CONSTRAINT chk_emprego_atual_sem_data_fim CHECK (NOT (emprego_atual = true AND data_fim IS NOT NULL))
 );
 
-COMMENT ON TABLE experiencias_profissionais IS 'Histórico profissional dos candidatos';
-
 -- Formações acadêmicas
 CREATE TABLE formacoes_academicas (
     id_formacao SERIAL PRIMARY KEY,
@@ -216,12 +163,6 @@ CREATE TABLE formacoes_academicas (
     CONSTRAINT chk_formacao_andamento CHECK (NOT (em_andamento = true AND data_conclusao IS NOT NULL))
 );
 
-COMMENT ON TABLE formacoes_academicas IS 'Formação acadêmica dos candidatos';
-
--- ============================================================================
--- 6. RELACIONAMENTOS MUITOS-PARA-MUITOS
--- ============================================================================
-
 -- Habilidades dos candidatos
 CREATE TABLE candidatos_habilidades (
     id_candidato INTEGER NOT NULL REFERENCES candidatos(id_candidato) ON DELETE CASCADE,
@@ -231,8 +172,6 @@ CREATE TABLE candidatos_habilidades (
     PRIMARY KEY (id_candidato, id_habilidade)
 );
 
-COMMENT ON TABLE candidatos_habilidades IS 'Relacionamento entre candidatos e suas habilidades';
-
 -- Habilidades requeridas pelas vagas
 CREATE TABLE vagas_habilidades (
     id_vaga INTEGER NOT NULL REFERENCES vagas(id_vaga) ON DELETE CASCADE,
@@ -241,12 +180,6 @@ CREATE TABLE vagas_habilidades (
     obrigatoria BOOLEAN DEFAULT false,
     PRIMARY KEY (id_vaga, id_habilidade)
 );
-
-COMMENT ON TABLE vagas_habilidades IS 'Habilidades requeridas para cada vaga';
-
--- ============================================================================
--- 7. CANDIDATURAS E PROCESSOS SELETIVOS
--- ============================================================================
 
 -- Candidaturas às vagas
 CREATE TABLE candidaturas (
@@ -260,8 +193,6 @@ CREATE TABLE candidaturas (
     -- Um candidato só pode se candidatar uma vez por vaga
     UNIQUE(id_candidato, id_vaga)
 );
-
-COMMENT ON TABLE candidaturas IS 'Candidaturas dos candidatos às vagas';
 
 -- Processos seletivos
 CREATE TABLE processos_seletivos (
@@ -277,8 +208,6 @@ CREATE TABLE processos_seletivos (
     CONSTRAINT chk_periodo_processo CHECK (data_fim IS NULL OR data_fim >= data_inicio)
 );
 
-COMMENT ON TABLE processos_seletivos IS 'Processos seletivos das candidaturas';
-
 -- Avaliações dos candidatos
 CREATE TABLE avaliacoes_candidatos (
     id_avaliacao SERIAL PRIMARY KEY,
@@ -289,12 +218,6 @@ CREATE TABLE avaliacoes_candidatos (
     id_etapa INTEGER NOT NULL REFERENCES etapas_processo(id_etapa),
     id_avaliador INTEGER NOT NULL REFERENCES usuarios(id_usuario)
 );
-
-COMMENT ON TABLE avaliacoes_candidatos IS 'Avaliações dos candidatos durante o processo seletivo';
-
--- ============================================================================
--- 8. COMUNICAÇÃO E NETWORKING
--- ============================================================================
 
 -- Sistema de mensagens
 CREATE TABLE mensagens (
@@ -310,8 +233,6 @@ CREATE TABLE mensagens (
     CONSTRAINT chk_remetente_diferente_destinatario CHECK (id_remetente != id_destinatario)
 );
 
-COMMENT ON TABLE mensagens IS 'Sistema de mensagens entre usuários';
-
 -- Conexões entre usuários (networking)
 CREATE TABLE conexoes (
     id_conexao SERIAL PRIMARY KEY,
@@ -325,12 +246,6 @@ CREATE TABLE conexoes (
     CONSTRAINT chk_conexao_diferentes CHECK (id_solicitante != id_receptor)
 );
 
-COMMENT ON TABLE conexoes IS 'Conexões entre usuários para networking';
-
--- ============================================================================
--- 9. AUDITORIA E HISTÓRICO
--- ============================================================================
-
 -- Histórico de mudanças de status
 CREATE TABLE historico_status (
     id_historico SERIAL PRIMARY KEY,
@@ -342,12 +257,6 @@ CREATE TABLE historico_status (
     id_usuario_responsavel INTEGER REFERENCES usuarios(id_usuario),
     motivo TEXT
 );
-
-COMMENT ON TABLE historico_status IS 'Auditoria de mudanças de status no sistema';
-
--- ============================================================================
--- 10. DADOS INICIAIS ESSENCIAIS
--- ============================================================================
 
 -- Inserindo categorias padrão de vagas
 INSERT INTO categorias_vaga (nome_categoria, descricao) VALUES
@@ -401,10 +310,6 @@ INSERT INTO localizacoes (pais, estado, cidade, cep) VALUES
 ('Brasil', 'Distrito Federal', 'Brasília', '70000-000'),
 ('Brasil', 'Santa Catarina', 'Florianópolis', '88000-000');
 
--- ============================================================================
--- FINALIZAÇÃO
--- ============================================================================
-
 -- Mostra o resumo das tabelas criadas
 SELECT 
     schemaname,
@@ -413,8 +318,3 @@ SELECT
 FROM pg_tables 
 WHERE schemaname = 'public'
 ORDER BY tablename;
-
-COMMENT ON DATABASE sistema_recrutamento IS 'Sistema completo de recrutamento online - versão acadêmica';
-
--- Script executado com sucesso
-SELECT 'Sistema de Recrutamento - Tabelas criadas com sucesso!' as status;
