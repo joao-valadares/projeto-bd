@@ -116,7 +116,7 @@ CREATE TABLE vagas (
     -- Validações
     CONSTRAINT chk_salario_consistente CHECK (salario_max >= salario_min),
     CONSTRAINT chk_quantidade_positiva CHECK (quantidade_vagas > 0),
-    CONSTRAINT chk_data_expiracao CHECK (data_expiracao >= CURRENT_DATE),
+    CONSTRAINT chk_data_expiracao CHECK (data_expiracao IS NULL OR data_expiracao >= CURRENT_DATE OR status_vaga IN ('fechada', 'cancelada')),
     CONSTRAINT chk_salarios_positivos CHECK (salario_min > 0 AND salario_max > 0)
 );
 
@@ -256,64 +256,3 @@ CREATE TABLE historico_status (
     id_usuario_responsavel INTEGER REFERENCES usuarios(id_usuario),
     motivo TEXT
 );
-
--- Inserindo categorias padrão de vagas
-INSERT INTO categorias_vaga (nome_categoria, descricao) VALUES
-('Tecnologia da Informação', 'Vagas relacionadas a desenvolvimento, infraestrutura e TI'),
-('Engenharia', 'Vagas para engenheiros de diversas especialidades'),
-('Marketing', 'Vagas na área de marketing digital e tradicional'),
-('Vendas', 'Oportunidades em vendas e relacionamento com clientes'),
-('Recursos Humanos', 'Vagas na área de gestão de pessoas'),
-('Financeiro', 'Oportunidades em finanças e contabilidade'),
-('Administrativo', 'Vagas administrativas e de apoio'),
-('Saúde', 'Oportunidades na área da saúde'),
-('Educação', 'Vagas em educação e treinamento'),
-('Jurídico', 'Oportunidades na área jurídica');
-
--- Inserindo etapas padrão do processo seletivo
-INSERT INTO etapas_processo (nome_etapa, descricao, ordem_execucao, tipo_etapa) VALUES
-('Triagem Curricular', 'Análise inicial do currículo do candidato', 1, 'triagem'),
-('Entrevista RH', 'Entrevista com o setor de recursos humanos', 2, 'entrevista_rh'),
-('Teste Técnico', 'Avaliação das competências técnicas', 3, 'teste_tecnico'),
-('Entrevista Técnica', 'Entrevista com a equipe técnica', 4, 'entrevista_tecnica'),
-('Entrevista Final', 'Entrevista final com gestores', 5, 'entrevista_final'),
-('Verificação de Referências', 'Checagem de referências profissionais', 6, 'verificacao_referencias'),
-('Proposta', 'Apresentação da proposta de contratação', 7, 'proposta');
-
--- Inserindo algumas habilidades essenciais
-INSERT INTO habilidades (nome_habilidade, categoria, descricao) VALUES
-('JavaScript', 'tecnica', 'Linguagem de programação para desenvolvimento web'),
-('Python', 'tecnica', 'Linguagem de programação versátil'),
-('SQL', 'tecnica', 'Linguagem para banco de dados'),
-('Java', 'tecnica', 'Linguagem de programação orientada a objetos'),
-('React', 'tecnica', 'Biblioteca JavaScript para interfaces'),
-('Node.js', 'tecnica', 'Runtime JavaScript para backend'),
-('Comunicação', 'comportamental', 'Habilidade de comunicação eficaz'),
-('Liderança', 'comportamental', 'Capacidade de liderar equipes'),
-('Trabalho em Equipe', 'comportamental', 'Colaboração efetiva em grupo'),
-('Inglês', 'idioma', 'Proficiência na língua inglesa'),
-('Espanhol', 'idioma', 'Proficiência na língua espanhola'),
-('AWS', 'certificacao', 'Amazon Web Services'),
-('Scrum Master', 'certificacao', 'Certificação em metodologia ágil');
-
--- Inserindo algumas localizações principais
-INSERT INTO localizacoes (pais, estado, cidade, cep) VALUES
-('Brasil', 'São Paulo', 'São Paulo', '01000-000'),
-('Brasil', 'Rio de Janeiro', 'Rio de Janeiro', '20000-000'),
-('Brasil', 'Minas Gerais', 'Belo Horizonte', '30000-000'),
-('Brasil', 'Paraná', 'Curitiba', '80000-000'),
-('Brasil', 'Rio Grande do Sul', 'Porto Alegre', '90000-000'),
-('Brasil', 'Bahia', 'Salvador', '40000-000'),
-('Brasil', 'Pernambuco', 'Recife', '50000-000'),
-('Brasil', 'Ceará', 'Fortaleza', '60000-000'),
-('Brasil', 'Distrito Federal', 'Brasília', '70000-000'),
-('Brasil', 'Santa Catarina', 'Florianópolis', '88000-000');
-
--- Mostra o resumo das tabelas criadas
-SELECT 
-    schemaname,
-    tablename,
-    tableowner
-FROM pg_tables 
-WHERE schemaname = 'public'
-ORDER BY tablename;
