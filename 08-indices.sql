@@ -1,6 +1,6 @@
 -- 1. ÍNDICES PARA TABELA DE USUÁRIOS
 
--- Índice para login (email é único, mas otimiza busca com senha)
+-- Índice para login (email é único)
 CREATE INDEX idx_usuarios_email_ativo 
 ON usuarios(email) 
 WHERE status_conta = 'ativo';
@@ -17,7 +17,7 @@ WHERE ultimo_login IS NOT NULL;
 
 -- 2. ÍNDICES PARA TABELA DE VAGAS
 
--- Índice composto para busca de vagas abertas (consulta mais comum)
+-- Índice composto para busca de vagas abertas
 CREATE INDEX idx_vagas_abertas_ativas 
 ON vagas(status_vaga, data_expiracao, data_publicacao DESC) 
 WHERE status_vaga = 'aberta';
@@ -36,7 +36,7 @@ CREATE INDEX idx_vagas_salario_nivel
 ON vagas(nivel_experiencia, salario_min, salario_max)
 WHERE salario_min IS NOT NULL AND salario_max IS NOT NULL;
 
--- Índice para modalidade de trabalho (tendência crescente)
+-- Índice para modalidade de trabalho
 CREATE INDEX idx_vagas_modalidade_publicacao 
 ON vagas(modalidade_trabalho, data_publicacao DESC)
 WHERE status_vaga = 'aberta';
@@ -56,7 +56,7 @@ ON candidaturas(id_vaga, status_candidatura, data_candidatura DESC);
 CREATE INDEX idx_candidaturas_data_status 
 ON candidaturas(data_candidatura DESC, status_candidatura);
 
--- Índice para busca de candidaturas únicas (evita duplicatas)
+-- Índice para busca de candidaturas únicas
 CREATE UNIQUE INDEX idx_candidaturas_unica 
 ON candidaturas(id_candidato, id_vaga);
 
@@ -122,7 +122,7 @@ ON formacoes_academicas(grau, data_conclusao DESC NULLS FIRST);
 
 -- 7. ÍNDICES PARA SISTEMA DE MENSAGENS E CONEXÕES
 
--- Índice para mensagens do usuário (recebidas e enviadas)
+-- Índice para mensagens do usuário
 CREATE INDEX idx_mensagens_destinatario_lida 
 ON mensagens(id_destinatario, lida, data_envio DESC);
 
