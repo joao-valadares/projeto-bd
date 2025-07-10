@@ -27,7 +27,6 @@ CREATE TRIGGER trigger_atualizar_curriculo
     FOR EACH ROW
     EXECUTE FUNCTION trg_atualizar_data_curriculo();
 
-COMMENT ON FUNCTION trg_atualizar_data_curriculo IS 'Atualiza timestamp de modificação do currículo';
 
 -- ============================================================================
 -- 2. TRIGGER: HISTÓRICO AUTOMÁTICO DE STATUS DE CANDIDATURAS
@@ -79,8 +78,6 @@ CREATE TRIGGER trigger_historico_candidatura
     AFTER UPDATE ON candidaturas
     FOR EACH ROW
     EXECUTE FUNCTION trg_historico_status_candidatura();
-
-COMMENT ON FUNCTION trg_historico_status_candidatura IS 'Registra histórico de mudanças de status de candidaturas';
 
 -- ============================================================================
 -- 3. TRIGGER: VALIDAÇÃO DE EXPERIÊNCIA PROFISSIONAL
@@ -136,7 +133,6 @@ CREATE TRIGGER trigger_validar_experiencia
     FOR EACH ROW
     EXECUTE FUNCTION trg_validar_experiencia_profissional();
 
-COMMENT ON FUNCTION trg_validar_experiencia_profissional IS 'Valida consistência de experiências profissionais';
 
 -- ============================================================================
 -- 4. TRIGGER: ATUALIZAÇÃO DE ÚLTIMO LOGIN
@@ -178,7 +174,6 @@ CREATE TRIGGER trigger_ultimo_login
     FOR EACH ROW
     EXECUTE FUNCTION trg_atualizar_ultimo_login();
 
-COMMENT ON FUNCTION trg_atualizar_ultimo_login IS 'Registra logs de acesso do usuário';
 
 -- ============================================================================
 -- 5. TRIGGER: CONTROLE DE VAGAS EXPIRADAS
@@ -235,7 +230,6 @@ CREATE TRIGGER trigger_vagas_expiradas_insert
     FOR EACH ROW
     EXECUTE FUNCTION trg_controlar_vagas_expiradas();
 
-COMMENT ON FUNCTION trg_controlar_vagas_expiradas IS 'Controla automaticamente vagas expiradas';
 
 -- ============================================================================
 -- 6. TRIGGER: VALIDAÇÃO DE CONEXÕES DUPLICADAS
@@ -284,7 +278,6 @@ CREATE TRIGGER trigger_validar_conexoes
     FOR EACH ROW
     EXECUTE FUNCTION trg_validar_conexoes();
 
-COMMENT ON FUNCTION trg_validar_conexoes IS 'Valida conexões para evitar duplicações';
 
 -- ============================================================================
 -- 7. FUNÇÃO AUXILIAR: EXECUTAR VERIFICAÇÃO DIÁRIA DE VAGAS EXPIRADAS
@@ -339,7 +332,6 @@ BEGIN
 END;
 $$;
 
-COMMENT ON FUNCTION sp_processar_vagas_expiradas IS 'Processa vagas expiradas automaticamente - para execução diária';
 
 -- ============================================================================
 -- 8. EXEMPLOS DE TESTE DOS TRIGGERS

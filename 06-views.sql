@@ -80,8 +80,6 @@ LEFT JOIN localizacoes l ON v.id_localizacao = l.id_localizacao
 WHERE v.status_vaga = 'aberta'
 AND v.data_expiracao >= CURRENT_DATE;
 
-COMMENT ON VIEW vw_vagas_abertas_detalhadas IS 'View completa de vagas abertas com todos os detalhes relevantes';
-
 -- ============================================================================
 -- 2. VIEW: CANDIDATOS POR VAGA COM STATUS DO PROCESSO
 -- Descrição: Mostra candidatos e seus status nos processos seletivos
@@ -165,8 +163,6 @@ INNER JOIN usuarios u ON cand.id_candidato = u.id_usuario
 LEFT JOIN processos_seletivos ps ON c.id_candidatura = ps.id_candidatura
 LEFT JOIN etapas_processo ep ON ps.etapa_atual = ep.id_etapa;
 
-COMMENT ON VIEW vw_candidatos_por_vaga IS 'View detalhada de candidatos por vaga com status do processo seletivo';
-
 -- ============================================================================
 -- 3. VIEW: DASHBOARD EMPRESAS
 -- Descrição: Métricas e estatísticas importantes para empresas
@@ -241,8 +237,6 @@ LEFT JOIN vagas v ON e.id_empresa = v.id_empresa
 LEFT JOIN candidaturas c ON v.id_vaga = c.id_vaga
 LEFT JOIN recrutadores r ON e.id_empresa = r.id_empresa
 GROUP BY e.id_empresa, e.nome_fantasia, e.setor_atividade, e.tamanho_empresa;
-
-COMMENT ON VIEW vw_dashboard_empresas IS 'Dashboard com métricas importantes para empresas';
 
 -- ============================================================================
 -- 4. VIEW: PERFIL COMPLETO DO CANDIDATO
@@ -350,8 +344,6 @@ GROUP BY
     cur.id_curriculo, cur.resumo_profissional, cur.objetivo, cur.data_atualizacao,
     u.ultimo_login, u.data_cadastro;
 
-COMMENT ON VIEW vw_perfil_completo_candidato IS 'Perfil completo e estatísticas do candidato';
-
 -- ============================================================================
 -- 5. VIEW: RELATÓRIO DE PROCESSOS SELETIVOS
 -- Descrição: Acompanhamento detalhado dos processos seletivos
@@ -435,8 +427,6 @@ GROUP BY
     cand.nome_completo, cand.nivel_experiencia, c.data_candidatura, c.status_candidatura,
     ps.data_inicio, ps.data_fim, ps.status_processo,
     ep_atual.id_etapa, ep_atual.nome_etapa, ep_atual.ordem_execucao;
-
-COMMENT ON VIEW vw_relatorio_processos_seletivos IS 'Relatório detalhado dos processos seletivos em andamento';
 
 -- ============================================================================
 -- 6. EXEMPLOS DE USO DAS VIEWS
