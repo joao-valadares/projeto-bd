@@ -1,13 +1,4 @@
--- ============================================================================
--- SISTEMA DE RECRUTAMENTO - CONSULTAS SQL CONTEXTUALIZADAS
--- Banco de Dados: PostgreSQL
--- Descrição: 10 consultas úteis e interessantes para o sistema de recrutamento
--- ============================================================================
-
--- ============================================================================
 -- 1. TOP 10 EMPRESAS COM MAIS VAGAS ABERTAS
--- Descrição: Ranking das empresas mais ativas no momento
--- ============================================================================
 
 SELECT 
     e.nome_fantasia AS empresa,
@@ -27,10 +18,7 @@ GROUP BY e.id_empresa, e.nome_fantasia, e.setor_atividade, e.tamanho_empresa
 ORDER BY total_vagas_abertas DESC, total_candidaturas_recebidas DESC
 LIMIT 10;
 
--- ============================================================================
 -- 2. CANDIDATOS MAIS ATIVOS (COM MAIS CANDIDATURAS NOS ÚLTIMOS 6 MESES)
--- Descrição: Identifica candidatos mais engajados na busca por emprego
--- ============================================================================
 
 SELECT 
     c.nome_completo AS candidato,
@@ -69,10 +57,7 @@ HAVING COUNT(cand.id_candidatura) >= 3  -- Pelo menos 3 candidaturas
 ORDER BY candidaturas_6_meses DESC, taxa_sucesso_percent DESC
 LIMIT 15;
 
--- ============================================================================
 -- 3. ANÁLISE DE SALÁRIOS POR ÁREA E NÍVEL DE EXPERIÊNCIA
--- Descrição: Estudo de mercado salarial por categoria e senioridade
--- ============================================================================
 
 SELECT 
     cv.nome_categoria AS area,
@@ -118,10 +103,7 @@ ORDER BY cv.nome_categoria,
              WHEN 'especialista' THEN 4
          END;
 
--- ============================================================================
 -- 4. PROCESSOS SELETIVOS MAIS LONGOS E EFICIENTES
--- Descrição: Análise de tempo e eficiência dos processos seletivos
--- ============================================================================
 
 SELECT 
     e.nome_fantasia AS empresa,
@@ -170,10 +152,7 @@ GROUP BY e.id_empresa, e.nome_fantasia, v.id_vaga, v.titulo, v.nivel_experiencia
 HAVING COUNT(ps.id_processo) >= 3  -- Pelo menos 3 processos para análise
 ORDER BY tempo_medio_dias DESC, taxa_contratacao_percent DESC;
 
--- ============================================================================
 -- 5. HABILIDADES MAIS DEMANDADAS NO MERCADO
--- Descrição: Ranking das competências mais requisitadas pelas empresas
--- ============================================================================
 
 SELECT 
     h.nome_habilidade AS habilidade,
@@ -224,10 +203,7 @@ HAVING COUNT(DISTINCT vh.id_vaga) > 0  -- Apenas habilidades com demanda
 ORDER BY vagas_que_exigem DESC, ratio_demanda_oferta DESC
 LIMIT 20;
 
--- ============================================================================
 -- 6. CANDIDATOS COM MELHOR COMPATIBILIDADE POR VAGA
--- Descrição: Matching inteligente entre candidatos e vagas específicas
--- ============================================================================
 
 WITH vaga_especifica AS (
     SELECT 1 as id_vaga_filtro  -- Pode ser parametrizado
@@ -325,10 +301,7 @@ FROM compatibilidade_candidatos
 ORDER BY score_total_compatibilidade DESC
 LIMIT 10;
 
--- ============================================================================
 -- 7. ANÁLISE DE RETENÇÃO: EMPRESAS VS CANDIDATOS APROVADOS
--- Descrição: Verifica quais empresas conseguem manter candidatos aprovados
--- ============================================================================
 
 SELECT 
     e.nome_fantasia AS empresa,
@@ -384,10 +357,7 @@ GROUP BY e.id_empresa, e.nome_fantasia, e.setor_atividade
 HAVING COUNT(DISTINCT c.id_candidato) >= 2  -- Pelo menos 2 aprovações
 ORDER BY candidatos_aprovados DESC, taxa_aprovacao_empresa DESC;
 
--- ============================================================================
 -- 8. TENDÊNCIAS DE MODALIDADE DE TRABALHO POR SETOR
--- Descrição: Análise da evolução das modalidades de trabalho
--- ============================================================================
 
 SELECT 
     cv.nome_categoria AS setor,
@@ -427,10 +397,7 @@ HAVING COUNT(*) >= 5  -- Pelo menos 5 vagas para ser significativo
 ORDER BY cv.nome_categoria, 
          COUNT(*) DESC;
 
--- ============================================================================
 -- 9. NETWORK ANALYSIS: CONEXÕES MAIS VALIOSAS
--- Descrição: Identifica usuários com maior potencial de networking
--- ============================================================================
 
 WITH network_stats AS (
     SELECT 
@@ -510,10 +477,7 @@ FROM influenciadores
 ORDER BY score_influencia DESC
 LIMIT 20;
 
--- ============================================================================
 -- 10. RELATÓRIO EXECUTIVO: MÉTRICAS GERAIS DO SISTEMA
--- Descrição: Dashboard executivo com KPIs principais
--- ============================================================================
 
 WITH metricas_periodo AS (
     SELECT 
@@ -633,11 +597,3 @@ SELECT
 
 FROM kpis_principais kp
 CROSS JOIN tendencias t;
-
--- ============================================================================
--- FINALIZAÇÃO
--- ============================================================================
-
-SELECT 'Consultas SQL criadas com sucesso!' as status,
-       'Total: 10 consultas contextualizadas' as detalhes,
-       'Funcionalidades: Rankings, análises, compatibilidade, tendências, métricas executivas' as recursos;
