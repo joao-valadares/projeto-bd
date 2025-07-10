@@ -1,89 +1,4 @@
--- ============================================================================
--- SISTEMA DE RECRUTAMENTO - VIEWS
--- Banco de Dados: PostgreSQL
--- Descrição: Views para consultas específicas e relatórios do sistema
--- ============================================================================
-
--- ============================================================================
--- 1. VIEW: VAGAS ABERTAS COM DETALHES COMPLETOS
--- Descrição: Mostra todas as vagas abertas com informações da empresa e localização
--- ============================================================================
-
-CREATE OR REPLACE VIEW vw_vagas_abertas_detalhadas AS
-SELECT 
-    v.id_vaga,
-    v.titulo,
-    v.descricao,
-    v.requisitos,
-    v.beneficios,
-    v.salario_min,
-    v.salario_max,
-    CASE 
-        WHEN v.salario_min IS NOT NULL AND v.salario_max IS NOT NULL THEN
-            'R$ ' || TO_CHAR(v.salario_min, 'FM999,999.00') || ' - R$ ' || TO_CHAR(v.salario_max, 'FM999,999.00')
-        WHEN v.salario_min IS NOT NULL THEN
-            'A partir de R$ ' || TO_CHAR(v.salario_min, 'FM999,999.00')
-        WHEN v.salario_max IS NOT NULL THEN
-            'Até R$ ' || TO_CHAR(v.salario_max, 'FM999,999.00')
-        ELSE 'A combinar'
-    END AS faixa_salarial,
-    v.tipo_contrato,
-    v.modalidade_trabalho,
-    v.nivel_experiencia,
-    v.data_publicacao,
-    v.data_expiracao,
-    EXTRACT(DAY FROM (v.data_expiracao - CURRENT_DATE)) AS dias_para_expirar,
-    v.quantidade_vagas,
-    
-    -- Dados da empresa
-    e.nome_fantasia AS empresa,
-    e.razao_social,
-    e.setor_atividade,
-    e.tamanho_empresa,
-    e.site_url AS site_empresa,
-    
-    -- Dados do recrutador
-    r.nome_completo AS recrutador,
-    r.cargo AS cargo_recrutador,
-    
-    -- Dados da categoria
-    cv.nome_categoria AS categoria,
-    
-    -- Dados da localização
-    l.cidade,
-    l.estado,
-    l.pais,
-    CASE 
-        WHEN l.cidade IS NOT NULL AND l.estado IS NOT NULL THEN
-            l.cidade || ', ' || l.estado
-        ELSE 'Não informado'
-    END AS localizacao_completa,
-    
-    -- Contadores
-    (SELECT COUNT(*) FROM candidaturas c WHERE c.id_vaga = v.id_vaga) AS total_candidatos,
-    (SELECT COUNT(*) FROM candidaturas c WHERE c.id_vaga = v.id_vaga AND c.status_candidatura = 'pendente') AS candidatos_pendentes,
-    
-    -- Habilidades requeridas (concatenadas)
-    (SELECT STRING_AGG(h.nome_habilidade || 
-        CASE WHEN vh.obrigatoria THEN ' (Obrigatória)' ELSE ' (Desejável)' END, 
-        ', ' ORDER BY vh.obrigatoria DESC, h.nome_habilidade)
-     FROM vagas_habilidades vh 
-     INNER JOIN habilidades h ON vh.id_habilidade = h.id_habilidade
-     WHERE vh.id_vaga = v.id_vaga
-    ) AS habilidades_requeridas
-
-FROM vagas v
-INNER JOIN empresas e ON v.id_empresa = e.id_empresa
-INNER JOIN recrutadores r ON v.id_recrutador = r.id_recrutador
-LEFT JOIN categorias_vaga cv ON v.id_categoria = cv.id_categoria
-LEFT JOIN localizacoes l ON v.id_localizacao = l.id_localizacao
-WHERE v.status_vaga = 'aberta'
-AND v.data_expiracao >= CURRENT_DATE;
-
--- ============================================================================
--- 2. VIEW: CANDIDATOS POR VAGA COM STATUS DO PROCESSO
--- Descrição: Mostra candidatos e seus status nos processos seletivos
--- ============================================================================
+-- 1. VIEW: CANDIDATOS POR VAGA COM STATUS DO PROCESSO
 
 CREATE OR REPLACE VIEW vw_candidatos_por_vaga AS
 SELECT 
@@ -163,85 +78,7 @@ INNER JOIN usuarios u ON cand.id_candidato = u.id_usuario
 LEFT JOIN processos_seletivos ps ON c.id_candidatura = ps.id_candidatura
 LEFT JOIN etapas_processo ep ON ps.etapa_atual = ep.id_etapa;
 
--- ============================================================================
--- 3. VIEW: DASHBOARD EMPRESAS
--- Descrição: Métricas e estatísticas importantes para empresas
--- ============================================================================
-
-CREATE OR REPLACE VIEW vw_dashboard_empresas AS
-SELECT 
-    e.id_empresa,
-    e.nome_fantasia AS empresa,
-    e.setor_atividade,
-    e.tamanho_empresa,
-    
-    -- Estatísticas de vagas
-    COUNT(v.id_vaga) AS total_vagas_publicadas,
-    COUNT(CASE WHEN v.status_vaga = 'aberta' THEN 1 END) AS vagas_abertas,
-    COUNT(CASE WHEN v.status_vaga = 'fechada' THEN 1 END) AS vagas_fechadas,
-    COUNT(CASE WHEN v.status_vaga = 'pausada' THEN 1 END) AS vagas_pausadas,
-    
-    -- Estatísticas de candidaturas
-    COUNT(c.id_candidatura) AS total_candidaturas_recebidas,
-    COUNT(CASE WHEN c.status_candidatura = 'pendente' THEN 1 END) AS candidaturas_pendentes,
-    COUNT(CASE WHEN c.status_candidatura = 'em_analise' THEN 1 END) AS candidaturas_em_analise,
-    COUNT(CASE WHEN c.status_candidatura = 'em_processo' THEN 1 END) AS candidaturas_em_processo,
-    COUNT(CASE WHEN c.status_candidatura = 'aprovado' THEN 1 END) AS candidaturas_aprovadas,
-    COUNT(CASE WHEN c.status_candidatura = 'rejeitado' THEN 1 END) AS candidaturas_rejeitadas,
-    
-    -- Métricas de desempenho
-    CASE 
-        WHEN COUNT(c.id_candidatura) > 0 THEN
-            ROUND((COUNT(CASE WHEN c.status_candidatura = 'aprovado' THEN 1 END) * 100.0 / 
-                   COUNT(c.id_candidatura)), 2)
-        ELSE 0
-    END AS taxa_aprovacao_percent,
-    
-    CASE 
-        WHEN COUNT(v.id_vaga) > 0 THEN
-            ROUND((COUNT(c.id_candidatura) * 1.0 / COUNT(v.id_vaga)), 2)
-        ELSE 0
-    END AS media_candidatos_por_vaga,
-    
-    -- Tempo médio de contratação (em dias)
-    (SELECT ROUND(AVG(EXTRACT(DAY FROM (ps.data_fim - ps.data_inicio))))
-     FROM candidaturas c2
-     INNER JOIN vagas v2 ON c2.id_vaga = v2.id_vaga
-     INNER JOIN processos_seletivos ps ON c2.id_candidatura = ps.id_candidatura
-     WHERE v2.id_empresa = e.id_empresa
-     AND c2.status_candidatura = 'aprovado'
-     AND ps.data_fim IS NOT NULL
-    ) AS tempo_medio_contratacao_dias,
-    
-    -- Dados temporais
-    MIN(v.data_publicacao) AS primeira_vaga_publicada,
-    MAX(v.data_publicacao) AS ultima_vaga_publicada,
-    COUNT(CASE WHEN v.data_publicacao >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) AS vagas_ultimo_mes,
-    COUNT(CASE WHEN c.data_candidatura >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) AS candidaturas_ultimo_mes,
-    
-    -- Top categoria de vagas
-    (SELECT cv.nome_categoria
-     FROM vagas v2
-     INNER JOIN categorias_vaga cv ON v2.id_categoria = cv.id_categoria
-     WHERE v2.id_empresa = e.id_empresa
-     GROUP BY cv.nome_categoria
-     ORDER BY COUNT(*) DESC
-     LIMIT 1
-    ) AS categoria_mais_publicada,
-    
-    -- Recrutadores ativos
-    COUNT(DISTINCT r.id_recrutador) AS total_recrutadores
-
-FROM empresas e
-LEFT JOIN vagas v ON e.id_empresa = v.id_empresa
-LEFT JOIN candidaturas c ON v.id_vaga = c.id_vaga
-LEFT JOIN recrutadores r ON e.id_empresa = r.id_empresa
-GROUP BY e.id_empresa, e.nome_fantasia, e.setor_atividade, e.tamanho_empresa;
-
--- ============================================================================
--- 4. VIEW: PERFIL COMPLETO DO CANDIDATO
--- Descrição: Visão unificada do perfil completo do candidato
--- ============================================================================
+-- 2. VIEW: PERFIL COMPLETO DO CANDIDATO
 
 CREATE OR REPLACE VIEW vw_perfil_completo_candidato AS
 SELECT 
@@ -344,10 +181,8 @@ GROUP BY
     cur.id_curriculo, cur.resumo_profissional, cur.objetivo, cur.data_atualizacao,
     u.ultimo_login, u.data_cadastro;
 
--- ============================================================================
--- 5. VIEW: RELATÓRIO DE PROCESSOS SELETIVOS
--- Descrição: Acompanhamento detalhado dos processos seletivos
--- ============================================================================
+-- 3. VIEW: RELATÓRIO DE PROCESSOS SELETIVOS
+
 
 CREATE OR REPLACE VIEW vw_relatorio_processos_seletivos AS
 SELECT 
@@ -428,39 +263,3 @@ GROUP BY
     ps.data_inicio, ps.data_fim, ps.status_processo,
     ep_atual.id_etapa, ep_atual.nome_etapa, ep_atual.ordem_execucao;
 
--- ============================================================================
--- 6. EXEMPLOS DE USO DAS VIEWS
--- ============================================================================
-
-/*
--- Exemplo 1: Buscar vagas abertas em São Paulo
-SELECT * FROM vw_vagas_abertas_detalhadas 
-WHERE cidade = 'São Paulo' 
-ORDER BY data_publicacao DESC;
-
--- Exemplo 2: Ver candidatos de uma vaga específica
-SELECT * FROM vw_candidatos_por_vaga 
-WHERE id_vaga = 1 
-ORDER BY percentual_match_habilidades DESC;
-
--- Exemplo 3: Dashboard de uma empresa
-SELECT * FROM vw_dashboard_empresas 
-WHERE id_empresa = 1;
-
--- Exemplo 4: Perfil de um candidato
-SELECT * FROM vw_perfil_completo_candidato 
-WHERE id_candidato = 1;
-
--- Exemplo 5: Processos seletivos em andamento
-SELECT * FROM vw_relatorio_processos_seletivos 
-WHERE status_processo = 'em_andamento'
-ORDER BY dias_no_processo DESC;
-*/
-
--- ============================================================================
--- FINALIZAÇÃO
--- ============================================================================
-
-SELECT 'Views criadas com sucesso!' as status,
-       'Total: 5 views implementadas' as detalhes,
-       'Funcionalidades: Vagas abertas, Candidatos, Dashboard empresas, Perfil candidatos, Processos seletivos' as recursos;
