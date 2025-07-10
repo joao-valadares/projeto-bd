@@ -45,7 +45,6 @@ empresas (
     nome_fantasia VARCHAR(255),
     setor_atividade VARCHAR(100),
     tamanho_empresa VARCHAR(20) CHECK (tamanho_empresa IN ('startup', 'pequena', 'media', 'grande', 'multinacional')),
-    endereco_sede TEXT,
     site_url VARCHAR(255),
     descricao TEXT,
     data_fundacao DATE

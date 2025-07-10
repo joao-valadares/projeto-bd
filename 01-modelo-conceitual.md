@@ -16,7 +16,7 @@ O modelo conceitual apresenta as entidades principais e seus relacionamentos par
 
 ### 3. **EMPRESA**
 - Especialização de USUARIO para organizações que oferecem vagas
-- **Atributos:** cnpj, razao_social, nome_fantasia, setor_atividade, tamanho_empresa, endereco_sede, site_url, descricao, data_fundacao
+- **Atributos:** cnpj, razao_social, nome_fantasia, setor_atividade, tamanho_empresa, site_url, descricao, data_fundacao
 
 ### 4. **RECRUTADOR**
 - Especialização de USUARIO para profissionais de RH
