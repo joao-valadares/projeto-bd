@@ -107,7 +107,6 @@ CREATE TRIGGER trigger_ultimo_login
     FOR EACH ROW
     EXECUTE FUNCTION trg_atualizar_ultimo_login();
 
-COMMENT ON FUNCTION trg_atualizar_ultimo_login IS 'Registra logs de acesso do usuário';
 
 -- 4. TRIGGER: CONTROLE DE VAGAS EXPIRADAS
 
@@ -161,7 +160,6 @@ CREATE TRIGGER trigger_vagas_expiradas_insert
     FOR EACH ROW
     EXECUTE FUNCTION trg_controlar_vagas_expiradas();
 
-COMMENT ON FUNCTION trg_controlar_vagas_expiradas IS 'Controla automaticamente vagas expiradas';
 
 
 -- 5. FUNÇÃO AUXILIAR: EXECUTAR VERIFICAÇÃO DIÁRIA DE VAGAS EXPIRADAS

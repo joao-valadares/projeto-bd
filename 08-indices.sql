@@ -37,10 +37,6 @@ CREATE INDEX idx_usuarios_ultimo_login
 ON usuarios(ultimo_login DESC) 
 WHERE ultimo_login IS NOT NULL;
 
-COMMENT ON INDEX idx_usuarios_email_ativo IS 'Otimiza login de usuários ativos';
-COMMENT ON INDEX idx_usuarios_tipo_status IS 'Otimiza consultas por tipo e status de usuário';
-COMMENT ON INDEX idx_usuarios_ultimo_login IS 'Otimiza relatórios de atividade de usuários';
-
 -- ============================================================================
 -- 2. ÍNDICES PARA TABELA DE VAGAS
 -- Justificativa: Consultas mais críticas do sistema
@@ -70,12 +66,6 @@ CREATE INDEX idx_vagas_modalidade_publicacao
 ON vagas(modalidade_trabalho, data_publicacao DESC)
 WHERE status_vaga = 'aberta';
 
-COMMENT ON INDEX idx_vagas_abertas_ativas IS 'Otimiza busca principal de vagas abertas';
-COMMENT ON INDEX idx_vagas_empresa_status IS 'Otimiza consultas de vagas por empresa';
-COMMENT ON INDEX idx_vagas_categoria_localizacao IS 'Otimiza busca por categoria e localização';
-COMMENT ON INDEX idx_vagas_salario_nivel IS 'Otimiza consultas de análise salarial';
-COMMENT ON INDEX idx_vagas_modalidade_publicacao IS 'Otimiza análise de modalidades de trabalho';
-
 -- ============================================================================
 -- 3. ÍNDICES PARA TABELA DE CANDIDATURAS
 -- Justificativa: Volume alto de transações e consultas de status
@@ -97,11 +87,6 @@ ON candidaturas(data_candidatura DESC, status_candidatura);
 CREATE UNIQUE INDEX idx_candidaturas_unica 
 ON candidaturas(id_candidato, id_vaga);
 
-COMMENT ON INDEX idx_candidaturas_candidato_status IS 'Otimiza dashboard do candidato';
-COMMENT ON INDEX idx_candidaturas_vaga_status IS 'Otimiza dashboard da empresa/vaga';
-COMMENT ON INDEX idx_candidaturas_data_status IS 'Otimiza relatórios temporais';
-COMMENT ON INDEX idx_candidaturas_unica IS 'Garante unicidade e otimiza verificação de duplicatas';
-
 -- ============================================================================
 -- 4. ÍNDICES PARA TABELA DE HABILIDADES E RELACIONAMENTOS
 -- Justificativa: Consultas de matching e compatibilidade
@@ -122,11 +107,6 @@ ON vagas_habilidades(id_vaga, obrigatoria, nivel_requerido);
 -- Índice para análise de demanda por habilidade
 CREATE INDEX idx_vagas_habilidades_demanda 
 ON vagas_habilidades(id_habilidade, obrigatoria, nivel_requerido);
-
-COMMENT ON INDEX idx_habilidades_categoria_nome IS 'Otimiza busca de habilidades por categoria';
-COMMENT ON INDEX idx_candidatos_habilidades_nivel IS 'Otimiza matching de habilidades do candidato';
-COMMENT ON INDEX idx_vagas_habilidades_obrigatoria IS 'Otimiza busca de requisitos da vaga';
-COMMENT ON INDEX idx_vagas_habilidades_demanda IS 'Otimiza análise de demanda por habilidades';
 
 -- ============================================================================
 -- 5. ÍNDICES PARA PROCESSOS SELETIVOS E AVALIAÇÕES
@@ -150,11 +130,6 @@ ON avaliacoes_candidatos(id_processo, data_avaliacao DESC);
 CREATE INDEX idx_avaliacoes_etapa_nota 
 ON avaliacoes_candidatos(id_etapa, nota DESC, data_avaliacao DESC);
 
-COMMENT ON INDEX idx_processos_candidatura_status IS 'Otimiza consultas de processo por candidatura';
-COMMENT ON INDEX idx_processos_etapa_data IS 'Otimiza consultas de processos em andamento';
-COMMENT ON INDEX idx_avaliacoes_processo_data IS 'Otimiza busca de avaliações por processo';
-COMMENT ON INDEX idx_avaliacoes_etapa_nota IS 'Otimiza análise de avaliações por etapa';
-
 -- ============================================================================
 -- 6. ÍNDICES PARA CURRÍCULOS E EXPERIÊNCIAS
 -- Justificativa: Busca de perfis e análise de experiências
@@ -176,11 +151,6 @@ ON experiencias_profissionais(data_inicio DESC, data_fim DESC NULLS FIRST);
 -- Índice para formações por grau
 CREATE INDEX idx_formacoes_grau_conclusao 
 ON formacoes_academicas(grau, data_conclusao DESC NULLS FIRST);
-
-COMMENT ON INDEX idx_curriculos_atualizacao IS 'Otimiza busca de currículos por atualização';
-COMMENT ON INDEX idx_experiencias_atuais IS 'Otimiza busca de empregos atuais';
-COMMENT ON INDEX idx_experiencias_periodo IS 'Otimiza consultas temporais de experiência';
-COMMENT ON INDEX idx_formacoes_grau_conclusao IS 'Otimiza busca de formações por grau';
 
 -- ============================================================================
 -- 7. ÍNDICES PARA SISTEMA DE MENSAGENS E CONEXÕES
@@ -206,12 +176,6 @@ CREATE INDEX idx_conexoes_ativas_data
 ON conexoes(status_conexao, data_conexao DESC)
 WHERE status_conexao = 'aceita';
 
-COMMENT ON INDEX idx_mensagens_destinatario_lida IS 'Otimiza caixa de entrada de mensagens';
-COMMENT ON INDEX idx_mensagens_remetente_data IS 'Otimiza mensagens enviadas';
-COMMENT ON INDEX idx_conexoes_solicitante_status IS 'Otimiza conexões enviadas pelo usuário';
-COMMENT ON INDEX idx_conexoes_receptor_status IS 'Otimiza conexões recebidas pelo usuário';
-COMMENT ON INDEX idx_conexoes_ativas_data IS 'Otimiza análise de networking';
-
 -- ============================================================================
 -- 8. ÍNDICES PARA HISTÓRICO E AUDITORIA
 -- Justificativa: Consultas de auditoria e rastreamento
@@ -229,10 +193,6 @@ ON historico_status(data_mudanca DESC, id_usuario_responsavel);
 CREATE INDEX idx_historico_status_novo_data 
 ON historico_status(status_novo, data_mudanca DESC);
 
-COMMENT ON INDEX idx_historico_tabela_registro IS 'Otimiza consultas de histórico por registro';
-COMMENT ON INDEX idx_historico_data_usuario IS 'Otimiza auditoria temporal';
-COMMENT ON INDEX idx_historico_status_novo_data IS 'Otimiza análise de mudanças de status';
-
 -- ============================================================================
 -- 9. ÍNDICES PARA LOCALIZAÇÃO E CATEGORIAS
 -- Justificativa: Filtros geográficos e categóricos frequentes
@@ -246,8 +206,6 @@ ON localizacoes(estado, cidade);
 CREATE INDEX idx_categorias_nome 
 ON categorias_vaga(nome_categoria);
 
-COMMENT ON INDEX idx_localizacoes_estado_cidade IS 'Otimiza busca geográfica';
-COMMENT ON INDEX idx_categorias_nome IS 'Otimiza busca por categoria';
 
 -- ============================================================================
 -- 10. ÍNDICES PARCIAIS PARA OTIMIZAÇÕES ESPECÍFICAS
@@ -267,10 +225,6 @@ WHERE id_empresa IN (SELECT id_usuario FROM usuarios WHERE status_conta = 'ativo
 -- Índice para recrutadores por empresa
 CREATE INDEX idx_recrutadores_empresa 
 ON recrutadores(id_empresa, cargo);
-
-COMMENT ON INDEX idx_candidatos_disponiveis IS 'Otimiza busca de candidatos disponíveis';
-COMMENT ON INDEX idx_empresas_ativas_setor IS 'Otimiza busca de empresas ativas por setor';
-COMMENT ON INDEX idx_recrutadores_empresa IS 'Otimiza busca de recrutadores por empresa';
 
 -- ============================================================================
 -- 11. ANÁLISE DE IMPACTO DOS ÍNDICES
@@ -300,8 +254,6 @@ AS $$
     ORDER BY idx_scan DESC;
 $$;
 
-COMMENT ON FUNCTION analisar_uso_indices IS 'Analisa estatísticas de uso dos índices';
-
 -- ============================================================================
 -- 12. MANUTENÇÃO DOS ÍNDICES
 -- ============================================================================
@@ -330,8 +282,6 @@ BEGIN
 END;
 $$;
 
-COMMENT ON FUNCTION reindexar_sistema IS 'Reindexação e atualização de estatísticas do sistema';
-
 -- ============================================================================
 -- 13. DOCUMENTAÇÃO DOS ÍNDICES CRIADOS
 -- ============================================================================
@@ -359,8 +309,6 @@ AND t.table_type = 'BASE TABLE'
 AND i.indexname IS NOT NULL
 AND i.indexname NOT LIKE '%_pkey'  -- Exclui chaves primárias
 ORDER BY t.table_name, i.indexname;
-
-COMMENT ON VIEW vw_documentacao_indices IS 'Documentação completa dos índices do sistema';
 
 -- ============================================================================
 -- 14. TESTES DE PERFORMANCE
@@ -402,8 +350,6 @@ BEGIN
     -- Adicione mais testes conforme necessário
 END;
 $$;
-
-COMMENT ON FUNCTION testar_performance_consultas IS 'Testa performance das consultas principais';
 
 -- ============================================================================
 -- FINALIZAÇÃO E RESUMO
