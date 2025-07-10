@@ -1,10 +1,4 @@
 -- ============================================================================
--- SISTEMA DE RECRUTAMENTO - STORED PROCEDURES E FUNÇÕES
--- Banco de Dados: PostgreSQL
--- Descrição: Procedimentos armazenados para operações do sistema
--- ============================================================================
-
--- ============================================================================
 -- 1. FUNÇÃO: CADASTRAR CANDIDATO COMPLETO
 -- Descrição: Cadastra um candidato com usuário, dados pessoais e currículo
 -- ============================================================================
@@ -81,8 +75,6 @@ EXCEPTION
         RAISE EXCEPTION 'Erro ao cadastrar candidato: %', SQLERRM;
 END;
 $$;
-
-COMMENT ON FUNCTION sp_cadastrar_candidato IS 'Cadastra um candidato completo no sistema';
 
 -- ============================================================================
 -- 2. FUNÇÃO: BUSCAR VAGAS COMPATÍVEIS
@@ -161,8 +153,6 @@ BEGIN
     LIMIT p_limite;
 END;
 $$;
-
-COMMENT ON FUNCTION sp_buscar_vagas_compativeis IS 'Busca vagas compatíveis com o perfil do candidato';
 
 -- ============================================================================
 -- 3. FUNÇÃO: REGISTRAR CANDIDATURA
@@ -243,7 +233,6 @@ EXCEPTION
 END;
 $$;
 
-COMMENT ON FUNCTION sp_registrar_candidatura IS 'Registra uma candidatura e inicia processo seletivo';
 
 -- ============================================================================
 -- 4. FUNÇÃO: ATUALIZAR STATUS VAGA
@@ -318,8 +307,6 @@ EXCEPTION
 END;
 $$;
 
-COMMENT ON FUNCTION sp_atualizar_status_vaga IS 'Atualiza status de vaga com controle de permissão';
-
 -- ============================================================================
 -- 5. FUNÇÃO: APROVAR EMPRESA
 -- Descrição: Aprova uma empresa para publicar vagas (workflow de aprovação)
@@ -378,8 +365,6 @@ EXCEPTION
 END;
 $$;
 
-COMMENT ON FUNCTION sp_aprovar_empresa IS 'Aprova empresa para publicar vagas no sistema';
-
 -- ============================================================================
 -- 6. FUNÇÃO: ESTATÍSTICAS DO CANDIDATO
 -- Descrição: Retorna estatísticas completas de um candidato
@@ -430,48 +415,11 @@ BEGIN
         END as taxa_aprovacao,
         e.ultima_candidatura,
         c.total_conexoes::INTEGER,
-        0::INTEGER as visualizacoes_perfil -- Simplificado para o exemplo
+        0::INTEGER as visualizacoes_perfil
     FROM estatisticas e
     CROSS JOIN conexoes_info c;
 END;
 $$;
-
-COMMENT ON FUNCTION sp_estatisticas_candidato IS 'Retorna estatísticas completas do candidato';
-
--- ============================================================================
--- 7. EXEMPLO DE USO DAS FUNÇÕES
--- ============================================================================
-
--- Exemplo 1: Cadastrar um candidato
-/*
-SELECT sp_cadastrar_candidato(
-    'joao.silva@email.com',
-    'senha_hash_aqui',
-    '12345678901',
-    'João Silva',
-    '1990-05-15',
-    '(11) 99999-9999',
-    'São Paulo, SP',
-    'https://linkedin.com/in/joaosilva',
-    'https://github.com/joaosilva',
-    'pleno',
-    8000.00
-);
-*/
-
--- Exemplo 2: Buscar vagas compatíveis
-/*
-SELECT * FROM sp_buscar_vagas_compativeis(1, 5);
-*/
-
--- Exemplo 3: Registrar candidatura
-/*
-SELECT sp_registrar_candidatura(1, 1, 'Tenho muito interesse nesta vaga...');
-*/
-
--- ============================================================================
--- MENSAGEM DE FINALIZAÇÃO
--- ============================================================================
 
 SELECT 'Stored Procedures criadas com sucesso!' as status,
        'Total: 6 funções implementadas' as detalhes;
