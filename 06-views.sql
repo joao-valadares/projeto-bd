@@ -85,7 +85,7 @@ SELECT
     cand.data_candidatura,
     ps.data_inicio,
     ps.status_processo,
-    EXTRACT(DAY FROM (CURRENT_DATE - ps.data_inicio::DATE)) AS dias_em_processo
+    (CURRENT_DATE - ps.data_inicio::DATE) AS dias_em_processo
 FROM processos_seletivos ps
 INNER JOIN candidaturas cand ON ps.id_candidatura = cand.id_candidatura
 INNER JOIN vagas v ON cand.id_vaga = v.id_vaga
