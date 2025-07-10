@@ -183,43 +183,25 @@ HAVING COUNT(CASE WHEN con.status_conexao = 'aceita' THEN 1 END) >= 3
 ORDER BY conexoes_ativas DESC
 LIMIT 15;
 
--- 10. RESUMO GERAL DO SISTEMA
+-- 10. EVOLUÇÃO DAS CANDIDATURAS POR MÊS
 
 SELECT 
-    -- Contadores básicos
-    COUNT(DISTINCT u.id_usuario) AS total_usuarios,
-    COUNT(DISTINCT CASE WHEN u.tipo_usuario = 'candidato' THEN u.id_usuario END) AS total_candidatos,
-    COUNT(DISTINCT CASE WHEN u.tipo_usuario = 'empresa' THEN u.id_usuario END) AS total_empresas,
-    COUNT(DISTINCT CASE WHEN u.tipo_usuario = 'recrutador' THEN u.id_usuario END) AS total_recrutadores,
-    
-    -- Vagas e candidaturas
-    COUNT(DISTINCT v.id_vaga) AS vagas_ativas,
-    COUNT(DISTINCT c.id_candidatura) AS total_candidaturas,
-    COUNT(DISTINCT CASE WHEN c.status_candidatura = 'aprovado' THEN c.id_candidatura END) AS total_contratacoes,
-    
-    -- Taxas importantes
-    ROUND((COUNT(DISTINCT CASE WHEN c.status_candidatura = 'aprovado' THEN c.id_candidatura END) * 100.0 / 
-           NULLIF(COUNT(DISTINCT c.id_candidatura), 0)), 2) AS taxa_conversao_geral,
-    
-    -- Valores médios
-    ROUND(AVG(v.salario_max), 2) AS salario_medio_vagas,
-    ROUND((COUNT(DISTINCT c.id_candidatura) * 1.0 / 
-           NULLIF(COUNT(DISTINCT v.id_vaga), 0)), 1) AS candidaturas_por_vaga,
-    
-    -- Atividade recente (últimos 30 dias)
-    COUNT(DISTINCT CASE WHEN u.data_cadastro >= CURRENT_DATE - INTERVAL '30 days' 
-                       THEN u.id_usuario END) AS novos_usuarios_mes,
-    COUNT(DISTINCT CASE WHEN v.data_publicacao >= CURRENT_DATE - INTERVAL '30 days' 
-                       THEN v.id_vaga END) AS novas_vagas_mes,
-    COUNT(DISTINCT CASE WHEN c.data_candidatura >= CURRENT_DATE - INTERVAL '30 days' 
-                       THEN c.id_candidatura END) AS candidaturas_mes,
-    
-    -- Data do relatório
-    CURRENT_DATE AS data_relatorio
-    
-FROM usuarios u
-LEFT JOIN vagas v ON (u.tipo_usuario = 'empresa' AND u.id_usuario = v.id_empresa)
-                  OR (u.tipo_usuario = 'recrutador' AND u.id_usuario = v.id_recrutador)
-LEFT JOIN candidaturas c ON v.id_vaga = c.id_vaga
-WHERE u.status_conta = 'ativo'
-AND (v.status_vaga = 'aberta' OR v.status_vaga IS NULL);
+    EXTRACT(YEAR FROM c.data_candidatura) AS ano,
+    EXTRACT(MONTH FROM c.data_candidatura) AS mes,
+    TO_CHAR(c.data_candidatura, 'YYYY-MM') AS periodo,
+    COUNT(*) AS total_candidaturas,
+    COUNT(CASE WHEN c.status_candidatura = 'aprovado' THEN 1 END) AS candidaturas_aprovadas,
+    COUNT(CASE WHEN c.status_candidatura = 'rejeitado' THEN 1 END) AS candidaturas_rejeitadas,
+    COUNT(CASE WHEN c.status_candidatura = 'pendente' THEN 1 END) AS candidaturas_pendentes,
+    ROUND((COUNT(CASE WHEN c.status_candidatura = 'aprovado' THEN 1 END) * 100.0 / 
+           COUNT(*)), 1) AS taxa_aprovacao_percent,
+    COUNT(DISTINCT c.id_candidato) AS candidatos_unicos,
+    COUNT(DISTINCT v.id_vaga) AS vagas_com_candidatura,
+    COUNT(DISTINCT v.id_empresa) AS empresas_ativas
+FROM candidaturas c
+INNER JOIN vagas v ON c.id_vaga = v.id_vaga
+WHERE c.data_candidatura >= CURRENT_DATE - INTERVAL '12 months'
+GROUP BY EXTRACT(YEAR FROM c.data_candidatura), 
+         EXTRACT(MONTH FROM c.data_candidatura),
+         TO_CHAR(c.data_candidatura, 'YYYY-MM')
+ORDER BY ano DESC, mes DESC;
