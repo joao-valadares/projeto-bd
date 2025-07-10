@@ -74,27 +74,7 @@ GROUP BY c.id_candidato, c.nome_completo, u.email, c.telefone,
          u.data_cadastro
 ORDER BY c.nome_completo;
 
--- 4. VIEW: DASHBOARD EMPRESAS
-
-CREATE OR REPLACE VIEW vw_dashboard_empresas AS
-SELECT 
-    e.id_empresa,
-    e.nome_fantasia AS empresa,
-    e.setor_atividade,
-    e.tamanho_empresa,
-    COUNT(DISTINCT v.id_vaga) AS total_vagas,
-    COUNT(DISTINCT CASE WHEN v.status_vaga = 'aberta' THEN v.id_vaga END) AS vagas_abertas,
-    COUNT(DISTINCT c.id_candidatura) AS total_candidaturas,
-    COUNT(DISTINCT CASE WHEN c.status_candidatura = 'aprovado' THEN c.id_candidatura END) AS candidaturas_aprovadas,
-    ROUND(AVG(v.salario_max), 2) AS salario_medio_oferecido
-FROM empresas e
-LEFT JOIN vagas v ON e.id_empresa = v.id_empresa
-LEFT JOIN candidaturas c ON v.id_vaga = c.id_vaga
-WHERE e.status_aprovacao = 'aprovado'
-GROUP BY e.id_empresa, e.nome_fantasia, e.setor_atividade, e.tamanho_empresa
-ORDER BY total_vagas DESC;
-
--- 5. VIEW: PROCESSOS SELETIVOS ATIVOS
+-- 4. VIEW: PROCESSOS SELETIVOS ATIVOS
 
 CREATE OR REPLACE VIEW vw_processos_ativos AS
 SELECT 
@@ -114,21 +94,4 @@ INNER JOIN candidatos c ON cand.id_candidato = c.id_candidato
 WHERE ps.status_processo = 'em_andamento'
 ORDER BY ps.data_inicio;
 
--- 6. VIEW: ESTATÍSTICAS GERAIS DO SISTEMA
-
-CREATE OR REPLACE VIEW vw_estatisticas_sistema AS
-SELECT 
-    'Estatísticas Gerais' AS categoria,
-    COUNT(DISTINCT u.id_usuario) AS total_usuarios,
-    COUNT(DISTINCT CASE WHEN u.tipo_usuario = 'candidato' THEN u.id_usuario END) AS total_candidatos,
-    COUNT(DISTINCT CASE WHEN u.tipo_usuario = 'empresa' THEN u.id_usuario END) AS total_empresas,
-    COUNT(DISTINCT v.id_vaga) AS total_vagas,
-    COUNT(DISTINCT CASE WHEN v.status_vaga = 'aberta' THEN v.id_vaga END) AS vagas_abertas,
-    COUNT(DISTINCT c.id_candidatura) AS total_candidaturas,
-    COUNT(DISTINCT CASE WHEN c.status_candidatura = 'aprovado' THEN c.id_candidatura END) AS total_contratacoes,
-    CURRENT_DATE AS data_relatorio
-FROM usuarios u
-LEFT JOIN vagas v ON (u.tipo_usuario = 'empresa' AND u.id_usuario = v.id_empresa)
-LEFT JOIN candidaturas c ON v.id_vaga = c.id_vaga
-WHERE u.status_conta = 'ativo';
 
