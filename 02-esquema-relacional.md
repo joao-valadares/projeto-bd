@@ -269,29 +269,3 @@ historico_status (
     motivo TEXT
 )
 ```
-
-## Relacionamentos e Restrições
-
-### Chaves Estrangeiras Principais:
-- **candidatos.id_candidato** → usuarios.id_usuario
-- **empresas.id_empresa** → usuarios.id_usuario  
-- **recrutadores.id_recrutador** → usuarios.id_usuario
-- **recrutadores.id_empresa** → empresas.id_empresa
-- **vagas.id_empresa** → empresas.id_empresa
-- **vagas.id_recrutador** → recrutadores.id_recrutador
-- **candidaturas.id_candidato** → candidatos.id_candidato
-- **candidaturas.id_vaga** → vagas.id_vaga
-
-### Restrições de Integridade:
-1. **CHECK Constraints:** Validam valores específicos para status, tipos e níveis
-2. **UNIQUE Constraints:** Evitam duplicações (email, CPF, CNPJ)
-3. **NOT NULL:** Garantem campos obrigatórios
-4. **DEFAULT Values:** Valores padrão para timestamps e status
-
-### Justificativas do Esquema:
-- **Normalização:** Tabelas normalizadas até a 3ª Forma Normal
-- **Flexibilidade:** Suporta diferentes cenários de recrutamento
-- **Performance:** Chaves adequadas para consultas frequentes
-- **Integridade:** Restrições garantem consistência dos dados
-- **Auditoria:** Tabela de histórico para rastreabilidade
-- **Escalabilidade:** Estrutura permite crescimento do sistema
